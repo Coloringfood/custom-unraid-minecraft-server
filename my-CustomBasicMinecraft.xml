@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>CustomMinecraftServer</Name>
+  <Repository>my-minecraft-server</Repository>
+  <Registry></Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://forums.unraid.net/topic/79530-support-ich777-gameserver-dockers/</Support>
+  <Project>https://www.minecraft.net/</Project>
+  <Overview>This is a Basic Minecraft Server, with the basic configuration it will download and install a Vanilla Minecraft.&#xD;
+&#xD;
+You can also install a FTB (FeedTheBeast), Bukkit, Spigot,... server.&#xD;
+&#xD;
+Start the container for the first time let it do it's work and shut it down.&#xD;
+After that copy over your favorite server executable (don't forget to set the Serverfile name to the same as you copied over) and start the container again.&#xD;
+&#xD;
+JAVA RUNTIME: Enter your prefered Runtime 'basicjre'=jre8, 'jre11'=jre11, 'jre15'=jre15 Don't change unless you are knowing what you are doing! Please keep in mind if you change the runtime you have to delete the old runtime before&#xD;
+&#xD;
+UPDATE: If you set the variable GAME_V to 'latest' the container will check on every restart if there is a newer version available (if set to 'latest' the variable JAR_NAME has to be 'server').&#xD;
+&#xD;
+ATTENTION: Don't forget to accept the EULA down below and don't forget to edit the 'server.properties' file the server is by default configured to be a LAN server and to be not snooped.&#xD;
+&#xD;
+WEB CONSOLE: You can connect to the Minecraft console by opening your browser and go to HOSTIP:9011 (eg: 192.168.1.1:9011) or click on WebUI on the Docker page within Unraid.</Overview>
+  <Category>GameServers:</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/ich777/docker-templates/master/ich777/images/mc.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>1745474554</DateInstalled>
+  <DonateText>If you like my work please </DonateText>
+  <DonateLink>https://www.paypal.me/chips777</DonateLink>
+  <Requires/>
+  <Config Name="ServerFiles" Target="/serverdata/serverfiles" Default="" Mode="rw" Description="" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/Minecraft/Project Architect 2/</Config>
+  <Config Name="Serverfile name" Target="JAR_NAME" Default="" Mode="" Description="Enter your executable jar file (Minecraft Serverfile) without the .jar extension." Type="Variable" Display="always" Required="true" Mask="false">forge-1.20.1-47.3.27-installer</Config>
+  <Config Name="Start Server Script" Target="START_SERVER_SCRIPT" Default="" Mode="" Description="Specify the custom start server script if needed. Leave blank to use the default. list without the .sh extension" Type="Variable" Display="always" Required="false" Mask="false">startserver</Config>
+  <Config Name="Game version" Target="GAME_V" Default="" Mode="" Description="If you set the variable GAME_V to 'latest' the container will check on every restart if there is a newer version available (if set to 'latest' the variable JAR_NAME has to be 'server' - available options are 'latest', 'custom' or simply leave empty)." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Extra Game Parameters" Target="GAME_PARAMS" Default="" Mode="" Description="Enter your extra startup parameters otherwise leave blank!" Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Extra JVM Parameters" Target="EXTRA_JVM_PARAMS" Default="" Mode="" Description="Enter your extra startup parameters for the JVM otherwise leave blank! (Only change if you know what you are doing!!!)" Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="XMS Size" Target="XMS_SIZE" Default="" Mode="" Description="Enter your XMS size in MB (XMS=The initial and minimum heap size. It is recommended to set the minimum heap size equivalent to the maximum heap size in order to minimize the garbage collection.)" Type="Variable" Display="always" Required="true" Mask="false">10024</Config>
+  <Config Name="XMX Size" Target="XMX_SIZE" Default="" Mode="" Description="Enter your XMX size in MB (XMX=The maximum heap size. The performance will decrease if the max heap value is set lower than the amount of live data. It will force frequent garbage collections in order to free up space.)" Type="Variable" Display="always" Required="true" Mask="false">10024</Config>
+  <Config Name="TCP - Game Port" Target="25565" Default="" Mode="tcp" Description="" Type="Port" Display="always" Required="true" Mask="false">25565</Config>
+  <Config Name="TCP2 - RCON" Target="25575" Default="" Mode="tcp" Description="Not required if not needed" Type="Port" Display="always" Required="false" Mask="false">25575</Config>
+  <Config Name="TCP - WebConsole" Target="8080" Default="" Mode="tcp" Description="WebConsole (by default, you can connect to the Minecraft console by opening your browser and go to HOSTIP:9011 - eg: 192.168.1.1:9011 - or click on WebUI on the Docker page within Unraid)." Type="Port" Display="always" Required="false" Mask="false">9011</Config>
+  <Config Name="Accept EULA" Target="ACCEPT_EULA" Default="false" Mode="" Description="Head over to: https://account.mojang.com/documents/minecraft_eula to read the EULA. (If you accept the EULA change the value to 'true' without quotes)." Type="Variable" Display="always" Required="true" Mask="false">true</Config>
+  <Config Name="Runtime Name" Target="RUNTIME_NAME" Default="" Mode="" Description="Enter your prefered Runtime: 'basicjre'=jre8, 'jre11'=jre11, 'jre15'=jre15, 'jre16'=jre16, 'jre17'=jre17, 'jre21=jre21' Don't change unless you are knowing what you are doing!" Type="Variable" Display="advanced" Required="true" Mask="false">jre21</Config>
+  <Config Name="UID" Target="UID" Default="" Mode="" Description="" Type="Variable" Display="advanced-hide" Required="true" Mask="false">99</Config>
+  <Config Name="GID" Target="GID" Default="" Mode="" Description="" Type="Variable" Display="advanced-hide" Required="true" Mask="false">100</Config>
+</Container>
