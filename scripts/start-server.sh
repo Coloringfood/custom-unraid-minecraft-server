@@ -161,11 +161,13 @@ echo "---Starting Server---"
 cd ${SERVER_DIR}
 export PATH="${JAVA_HOME_DIR}/bin:$PATH"
 if [ -n "${START_SERVER_SCRIPT}" ]; then
+	# Per-pack override: run the pack's own start script verbatim.
 	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m ${SERVER_DIR}/${START_SERVER_SCRIPT}.sh
-elif [ -z "${JVM_CUSTOM_COMMAND}" ]; then
-	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m ${JAVA_HOME_DIR}/bin/java ${EXTRA_JVM_PARAMS} -Xmx${XMX_SIZE}M -Xms${XMS_SIZE}M -jar ${SERVER_DIR}/${JAR_NAME}.jar nogui ${GAME_PARAMS}
-else
+elif [ -n "${JVM_CUSTOM_COMMAND}" ]; then
 	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m ${JAVA_HOME_DIR}/bin/java ${JVM_CUSTOM_COMMAND} ${GAME_PARAMS}
+else
+	# Default: generic headless auto-detect launcher (Forge/NeoForge/Fabric/vanilla).
+	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m /opt/scripts/launch.sh
 fi
 echo "---Waiting for logs, please stand by...---"
 if [ "${ENABLE_WEBCONSOLE}" == "true" ]; then

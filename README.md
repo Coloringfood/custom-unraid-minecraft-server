@@ -1,27 +1,35 @@
 # Custom Minecraft Server in Docker
 
-Run *any* Minecraft server (Vanilla, Forge, Fabric, Paper, Spigot, FTB, …) from a
-directory you already have. Point the container at your pre-downloaded server
-files, tell it which start script to run, and it will install the right Java
-runtime and launch it.
+Run *any* Minecraft server (Vanilla, Forge, NeoForge, Fabric, Paper, Spigot, FTB, …)
+from a directory you already have. Mount your pre-downloaded server folder, and the
+container installs the right Java runtime, accepts the EULA, and launches it.
 
-## Bring your own server directory (recommended)
+## Two launch models
 
-1. Mount your existing server folder to `/serverdata/serverfiles`.
-2. Put a start script in that folder, e.g. `startserver.sh`, containing your
-   launch command (for a Forge server this is usually the generated
-   `run.sh`/`user_jvm_args.txt` invocation).
-3. Set `START_SERVER_SCRIPT=startserver` (the name **without** the `.sh`).
-4. Pick a Java version with `RUNTIME_NAME` (see below) and accept the EULA.
+**1. Generic launcher (default).** Leave `START_SERVER_SCRIPT` empty and the
+container auto-detects what to run in the server dir, headless and with *your*
+memory settings:
 
-When `START_SERVER_SCRIPT` is set the container skips all Vanilla
-version-checking/downloading — it only installs Java and runs your script. The
-runtime's `bin/` is prepended to `PATH`, so `java` inside your script resolves
-to the installed runtime.
+- **Forge / NeoForge** — launches the installed server (`libraries/.../unix_args.txt`).
+  If it isn't installed yet, it runs a `forge-*-installer.jar` present in the dir,
+  or downloads+installs one when you set `MC_VERSION`+`FORGE_VERSION`
+  (or `NEOFORGE_VERSION`).
+- **Fabric** — runs `fabric-server-launch.jar`.
+- **Vanilla / Paper / Spigot** — runs `${JAR_NAME}.jar` (also works with
+  `GAME_V=latest` to auto-download Vanilla).
 
-> Leave `START_SERVER_SCRIPT` blank to fall back to the original behaviour:
-> set `GAME_V=latest` to auto-download Vanilla, `GAME_V=custom` to run your own
-> `${JAR_NAME}.jar`, or provide a full `JVM_CUSTOM_COMMAND`.
+Memory/JVM flags come from `XMX_SIZE`/`XMS_SIZE`/`EXTRA_JVM_PARAMS` — a pack's own
+`user_jvm_args.txt` is ignored so RAM is controlled in one place.
+
+**2. Per-pack override.** Set `START_SERVER_SCRIPT=<name>` (without `.sh`) to run a
+start script that ships inside the server dir, exactly as the pack intends. The
+installed runtime's `bin/` is on `PATH`, so `java` in that script resolves to it.
+Use this when a pack's own launcher does setup you want to keep.
+
+> ⚠️ Some packs' shipped scripts are **interactive** (e.g. Vault Hunters prompts
+> for "Sky Vaults? [Y/N]") or delete client-only mods before starting. Interactive
+> scripts will hang in a container — prefer the generic launcher for those, and
+> remove client-only mods (e.g. `rubidium`) that crash dedicated servers.
 
 ## Java runtime
 
@@ -52,7 +60,10 @@ ATTENTION: Don't forget to accept the EULA down below and don't forget to edit t
 | --- | --- | --- |
 | SERVER_DIR | Folder for gamefile | /serverdata/serverfiles |
 | RUNTIME_NAME | Temurin JRE to install: `basicjre`=Java 8, `jre11`, `jre17`, `jre21`, etc. Switching versions auto-removes the old runtime. | jre17 |
-| START_SERVER_SCRIPT | Name (without `.sh`) of a start script in your server dir to run. Set this to bring your own pre-downloaded server. | startserver |
+| START_SERVER_SCRIPT | Name (without `.sh`) of a start script in your server dir to run (per-pack override). Leave empty to use the generic auto-detect launcher. | startserver |
+| MC_VERSION | Minecraft version, so the generic launcher can download+install Forge when the dir has no installer/libraries. Pair with FORGE_VERSION. | 1.20.1 |
+| FORGE_VERSION | Forge version for the generic launcher's download-install. | 47.4.8 |
+| NEOFORGE_VERSION | NeoForge version for the generic launcher's download-install. | 21.1.72 |
 | JAR_NAME | Executable jar file (Minecraft Serverfile) without the .jar extension. | server |
 | GAME_PARAMS | Extra startup Parameters if needed (leave empty if not needed) | empty |
 | GAME_PORT | TCP Gameport for the server | 25565 |

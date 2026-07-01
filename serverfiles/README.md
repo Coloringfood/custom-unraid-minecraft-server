@@ -1,20 +1,32 @@
 # Local test server directory
 
-`docker-compose.yml` mounts this folder to `/serverdata/serverfiles` inside the
-container. Drop a pre-downloaded Minecraft server here to test against.
+Each subfolder here is one server/modpack. `docker-compose.yml` mounts **one** of
+them to `/serverdata/serverfiles` via the `PACK` variable:
 
-Everything in this folder is git-ignored (except this README and `.gitkeep`), so
-worlds, jars, the downloaded Java runtime, logs, etc. are never committed.
+```bash
+docker compose up -d --build                       # PACK defaults to DeceasedCraft
+PACK=ProjectArchitect2 docker compose up -d        # switch packs
+```
 
-## Quick start
+Everything inside each pack folder is git-ignored (worlds, jars, the downloaded
+Java runtime, installed Forge `libraries/`, logs, etc.), so nothing here gets
+committed.
 
-1. Copy your server files here (e.g. Forge's generated files).
-2. Add a start script, e.g. `startserver.sh`:
-   ```bash
-   #!/bin/bash
-   # Forge 1.20.1 example — java is on PATH from the installed runtime
-   java @user_jvm_args.txt @libraries/net/minecraftforge/forge/*/unix_args.txt nogui
-   ```
-   Make sure the name (without `.sh`) matches `START_SERVER_SCRIPT` in
-   `docker-compose.yml`.
-3. From the repo root: `docker compose up --build`.
+## Launching a pack
+
+- **Generic (default):** leave `START_SERVER_SCRIPT` empty. For a Forge/NeoForge
+  pack with no `libraries/` yet, either drop its `forge-*-installer.jar` in the
+  folder or pass the version so it downloads+installs:
+  ```bash
+  PACK=VaultHunters3rdEditionRemastered MC_VERSION=1.18.2 FORGE_VERSION=40.3.11 \
+    XMX_SIZE=6144 XMS_SIZE=6144 docker compose up -d --build
+  ```
+- **Per-pack override:** run the pack's own script:
+  ```bash
+  PACK=ProjectArchitect2 START_SERVER_SCRIPT=startserver docker compose up -d --build
+  ```
+
+Watch it boot: `docker compose logs -f` — look for `Done (…)! For help, type "help"`.
+
+> Remove client-only mods (e.g. `rubidium`, `legendarytooltips`, `torohealth`)
+> from a pack's `mods/` — they crash dedicated servers.
