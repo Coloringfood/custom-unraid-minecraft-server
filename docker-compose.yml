@@ -1,0 +1,39 @@
+services:
+  minecraft:
+    build: .
+    container_name: custom-minecraft-server
+    restart: unless-stopped
+    ports:
+      - "25565:25565"   # game
+      - "25575:25575"   # RCON (optional)
+      - "9011:8080"     # gotty web console -> http://localhost:9011
+    environment:
+      # --- Bring your own server directory ---
+      # Name (without .sh) of the start script inside ./serverfiles to run.
+      # Leave blank to fall back to Vanilla download (GAME_V=latest) or a
+      # custom jar (GAME_V=custom, JAR_NAME=<file without .jar>).
+      START_SERVER_SCRIPT: "startserver"
+
+      # --- Java runtime (Temurin) ---
+      # basicjre=8, jre11, jre17, jre21, ...  Switching auto-removes the old one.
+      # Forge 1.20.1 (DeceasedCraft) officially targets Java 17.
+      RUNTIME_NAME: "jre17"
+
+      # --- Memory / JVM tuning (authoritative for the server) ---
+      # startserver.sh applies these; the modpack's user_jvm_args.txt is ignored.
+      XMX_SIZE: "4096"
+      XMS_SIZE: "4096"
+      # EXTRA_JVM_PARAMS: "-XX:+UseG1GC"
+
+      # --- Required: accept the Minecraft EULA to start ---
+      # https://account.mojang.com/documents/minecraft_eula
+      ACCEPT_EULA: "true"
+
+      # --- Optional extras ---
+      # GAME_PARAMS: ""
+      # EXTRA_JVM_PARAMS: ""
+      # JVM_CUSTOM_COMMAND: ""
+      ENABLE_WEBCONSOLE: "true"
+    volumes:
+      - ./serverfiles:/serverdata/serverfiles
+    stop_grace_period: 60s   # give the server time to save & stop cleanly

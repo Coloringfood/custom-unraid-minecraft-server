@@ -1,114 +1,78 @@
 #!/bin/bash
-echo "---Checking for 'runtime' folder---"
-if [ ! -d ${SERVER_DIR}/runtime ]; then
-	echo "---'runtime' folder not found, creating...---"
-	mkdir ${SERVER_DIR}/runtime
-else
-	echo "---'runtime' folder found---"
-fi
+# ---------------------------------------------------------------------------
+# Java runtime install
+#
+# RUNTIME_NAME selects which Temurin (Eclipse Adoptium) JRE major version to
+# install:  basicjre -> 8, jre11 -> 11, jre17 -> 17, jre21 -> 21, etc.
+# The runtime is downloaded from the Adoptium API (always the latest GA build
+# for that major version) and extracted to ${SERVER_DIR}/runtime/${RUNTIME_NAME}.
+# Any other RUNTIME_NAME is treated as a user-provided runtime: the matching
+# folder must already exist under ${SERVER_DIR}/runtime/.
+# ---------------------------------------------------------------------------
+RUNTIME_DIR="${SERVER_DIR}/runtime"
+JAVA_HOME_DIR="${RUNTIME_DIR}/${RUNTIME_NAME}"
 
-if [ ! -z "$(find ${SERVER_DIR}/runtime -name jre*)" ]; then
-	if [ "${RUNTIME_NAME}" == "basicjre" ]; then
-		if [ "$(ls -d ${SERVER_DIR}/runtime/* | cut -d '/' -f5)" != "jre1.8.0_333" ]; then
-			rm -rf ${SERVER_DIR}/runtime/*
-		fi
-	elif [ "${RUNTIME_NAME}" != "$(ls -d ${SERVER_DIR}/runtime/* | cut -d '/' -f5)" ]; then
-		rm -rf ${SERVER_DIR}/runtime/*
+echo "---Checking for 'runtime' folder---"
+mkdir -p "${RUNTIME_DIR}"
+
+# Remove any runtime folders that aren't the one we want (keeps the dir tidy
+# and reclaims space when switching Java versions).
+for d in "${RUNTIME_DIR}"/*/; do
+	[ -d "$d" ] || continue
+	if [ "$(basename "$d")" != "${RUNTIME_NAME}" ]; then
+		echo "---Removing stale runtime '$(basename "$d")'---"
+		rm -rf "$d"
+	fi
+done
+
+echo "---Checking if Runtime is installed---"
+if [ -x "${JAVA_HOME_DIR}/bin/java" ]; then
+	echo "---Runtime '${RUNTIME_NAME}' found---"
+else
+	# Map RUNTIME_NAME to an Adoptium major version. Empty => user-provided.
+	case "${RUNTIME_NAME}" in
+		basicjre) JAVA_MAJOR=8 ;;
+		jre*)     JAVA_MAJOR="${RUNTIME_NAME#jre}" ;;
+		*)        JAVA_MAJOR="" ;;
+	esac
+
+	if [ -z "${JAVA_MAJOR}" ]; then
+		echo "---------------------------------------------------------------------------------------------"
+		echo "---Custom runtime '${RUNTIME_NAME}' not found in '${RUNTIME_DIR}', please check! Sleeping!---"
+		echo "---------------------------------------------------------------------------------------------"
+		sleep infinity
+	fi
+
+	DL_URL="https://api.adoptium.net/v3/binary/latest/${JAVA_MAJOR}/ga/linux/x64/jre/hotspot/normal/eclipse"
+	echo "---Downloading and installing Temurin JRE ${JAVA_MAJOR}---"
+	mkdir -p "${JAVA_HOME_DIR}"
+	if wget -q --show-progress --progress=bar:force:noscroll -O "${RUNTIME_DIR}/${RUNTIME_NAME}.tar.gz" "${DL_URL}"; then
+		echo "---Successfully downloaded Temurin JRE ${JAVA_MAJOR}!---"
+		tar --directory "${JAVA_HOME_DIR}" --strip-components=1 -xzf "${RUNTIME_DIR}/${RUNTIME_NAME}.tar.gz"
+		rm -f "${RUNTIME_DIR}/${RUNTIME_NAME}.tar.gz"
+	else
+		echo "---Something went wrong, can't download the Runtime, putting server in sleep mode---"
+		sleep infinity
 	fi
 fi
 
-echo "---Checking if Runtime is installed---"
-if [ -z "$(find ${SERVER_DIR}/runtime -name jre*)" ]; then
-    if [ "${RUNTIME_NAME}" == "basicjre" ]; then
-    	echo "---Downloading and installing Basic Runtime---"
-		cd ${SERVER_DIR}/runtime
-		if wget -q -nc --show-progress --progress=bar:force:noscroll https://github.com/ich777/runtimes/raw/master/jre/basicjre.tar.gz ; then
-			echo "---Successfully downloaded Runtime!---"
-		else
-			echo "---Something went wrong, can't download Runtime, putting server in sleep mode---"
-			sleep infinity
-		fi
-        tar --directory ${SERVER_DIR}/runtime -xvzf ${SERVER_DIR}/runtime/basicjre.tar.gz
-        rm -rf ${SERVER_DIR}/runtime/basicjre.tar.gz
-	elif  [ "${RUNTIME_NAME}" == "jre11" ]; then
-		JRE11_URL="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.9.1%2B1/OpenJDK11U-jre_x64_linux_hotspot_11.0.9.1_1.tar.gz"
-    	echo "---Downloading and installing JRE11---"
-		cd ${SERVER_DIR}/runtime
-		if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz ${JRE11_URL} ; then
-			echo "---Successfully downloaded JRE11!---"
-		else
-			echo "---Something went wrong, can't download JRE11, putting server in sleep mode---"
-			sleep infinity
-		fi
-		mkdir ${SERVER_DIR}/runtime/${RUNTIME_NAME}
-        tar --directory ${SERVER_DIR}/runtime/${RUNTIME_NAME} --strip-components=1 -xvzf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-        rm -rf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-	elif  [ "${RUNTIME_NAME}" == "jre15" ]; then
-		JRE15_URL="https://github.com/AdoptOpenJDK/openjdk15-binaries/releases/download/jdk-15.0.1%2B9/OpenJDK15U-jre_x64_linux_hotspot_15.0.1_9.tar.gz"
-    	echo "---Downloading and installing JRE15---"
-		cd ${SERVER_DIR}/runtime
-		if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz ${JRE15_URL} ; then
-			echo "---Successfully downloaded JRE15!---"
-		else
-			echo "---Something went wrong, can't download JRE15, putting server in sleep mode---"
-			sleep infinity
-		fi
-		mkdir ${SERVER_DIR}/runtime/${RUNTIME_NAME}
-        tar --directory ${SERVER_DIR}/runtime/${RUNTIME_NAME} --strip-components=1 -xvzf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-        rm -rf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-	elif  [ "${RUNTIME_NAME}" == "jre16" ]; then
-		JRE16_URL="https://github.com/AdoptOpenJDK/openjdk16-binaries/releases/download/jdk16u-2021-05-08-12-45/OpenJDK16U-jre_x64_linux_hotspot_2021-05-08-12-45.tar.gz"
-    	echo "---Downloading and installing JRE16---"
-		cd ${SERVER_DIR}/runtime
-		if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz ${JRE16_URL} ; then
-			echo "---Successfully downloaded JRE16!---"
-		else
-			echo "---Something went wrong, can't download JRE16, putting server in sleep mode---"
-			sleep infinity
-		fi
-		mkdir ${SERVER_DIR}/runtime/${RUNTIME_NAME}
-        tar --directory ${SERVER_DIR}/runtime/${RUNTIME_NAME} --strip-components=1 -xvzf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-        rm -rf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-	elif  [ "${RUNTIME_NAME}" == "jre17" ]; then
-		JRE17_URL="https://github.com/AdoptOpenJDK/openjdk17-binaries/releases/download/jdk-2021-05-07-13-31/OpenJDK-jdk_x64_linux_hotspot_2021-05-06-23-30.tar.gz"
-    	echo "---Downloading and installing JRE17---"
-		cd ${SERVER_DIR}/runtime
-		if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz ${JRE17_URL} ; then
-			echo "---Successfully downloaded JRE17!---"
-		else
-			echo "---Something went wrong, can't download JRE17, putting server in sleep mode---"
-			sleep infinity
-		fi
-		mkdir ${SERVER_DIR}/runtime/${RUNTIME_NAME}
-        tar --directory ${SERVER_DIR}/runtime/${RUNTIME_NAME} --strip-components=1 -xvzf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-        rm -rf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-	elif  [ "${RUNTIME_NAME}" == "jre21" ]; then
-		JRE21_URL="https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz"
-    	echo "---Downloading and installing JRE21---"
-		cd ${SERVER_DIR}/runtime
-		if wget -q -nc --show-progress --progress=bar:force:noscroll -O ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz ${JRE21_URL} ; then
-			echo "---Successfully downloaded JRE21!---"
-		else
-			echo "---Something went wrong, can't download JRE21, putting server in sleep mode---"
-			sleep infinity
-		fi
-		mkdir ${SERVER_DIR}/runtime/${RUNTIME_NAME}
-        tar --directory ${SERVER_DIR}/runtime/${RUNTIME_NAME} --strip-components=1 -xvzf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-        rm -rf ${SERVER_DIR}/runtime/${RUNTIME_NAME}.tar.gz
-    else
-    	if [ ! -d ${SERVER_DIR}/runtime/${RUNTIME_NAME} ]; then
-        	echo "---------------------------------------------------------------------------------------------"
-        	echo "---Runtime not found in folder 'runtime' please check again! Putting server in sleep mode!---"
-        	echo "---------------------------------------------------------------------------------------------"
-        	sleep infinity
-        fi
-    fi
-else
-	echo "---Runtime found---"
-fi
-
+# ---------------------------------------------------------------------------
+# Server executable / start command
+#
+# Primary path: bring your own pre-downloaded server directory plus a start
+# script named ${START_SERVER_SCRIPT}.sh living in ${SERVER_DIR}. When that is
+# set we skip all vanilla version-checking/downloading entirely.
+# ---------------------------------------------------------------------------
 echo "---Checking for Minecraft Server executable ---"
-if [ ! -z "${JVM_CUSTOM_COMMAND}" ]; then
+if [ -n "${START_SERVER_SCRIPT}" ]; then
+	echo "---Using custom start script '${START_SERVER_SCRIPT}.sh' from the server directory---"
+	if [ ! -f "${SERVER_DIR}/${START_SERVER_SCRIPT}.sh" ]; then
+		echo "---Can't find '${START_SERVER_SCRIPT}.sh' in '${SERVER_DIR}', putting server in sleep mode!---"
+		sleep infinity
+	fi
+	# Bind-mounted scripts (esp. from Windows hosts) may not carry the exec bit.
+	chmod +x "${SERVER_DIR}/${START_SERVER_SCRIPT}.sh" 2>/dev/null ||:
+elif [ -n "${JVM_CUSTOM_COMMAND}" ]; then
 	echo "---Detected JVM_CUSTOM_COMMAND: ${JVM_CUSTOM_COMMAND} skipping Check for Minecraft Server executable!---"
 elif [ "${GAME_V}" == "custom" ]; then
 	echo "---Custom mode enabled please make sure that '${JAR_NAME}.jar' is in the main directory!---"
@@ -164,7 +128,6 @@ if [ ! -f ~/.screenrc ]; then
     echo "defscrollback 30000
 bindkey \"^C\" echo 'Blocked. Please use to command \"stop\" to shutdown the server or close this window to exit the terminal.'" > ~/.screenrc
 fi
-export RUNTIME_NAME="$(ls -d ${SERVER_DIR}/runtime/* | cut -d '/' -f5)"
 echo "---Checking for 'server.properties'---"
 if [ ! -f ${SERVER_DIR}/server.properties ]; then
 	cp /tmp/server.properties ${SERVER_DIR}/
@@ -172,20 +135,23 @@ else
     echo "---'server.properties' found..."
 fi
 chmod -R ${DATA_PERM} ${DATA_DIR}
-if [ ! -f $SERVER_DIR/eula.txt ]; then
-	:
+# Settle the EULA *before* launching so there is no dependency on how long the
+# server (or a first-boot installer) takes to create eula.txt.
+if [ "${ACCEPT_EULA}" == "true" ]; then
+	echo "---EULA accepted via ACCEPT_EULA---"
+	echo "eula=true" > ${SERVER_DIR}/eula.txt
+elif [ "${ACCEPT_EULA}" == "false" ]; then
+	if [ -f ${SERVER_DIR}/eula.txt ] && grep -rq 'eula=true' ${SERVER_DIR}/eula.txt; then
+		sed -i '/eula=true/c\eula=false' ${SERVER_DIR}/eula.txt
+	fi
+	echo
+	echo "-------------------------------------------------------"
+	echo "------EULA not accepted, you must accept the EULA------"
+	echo "---to start the Server, putting server in sleep mode---"
+	echo "-------------------------------------------------------"
+	sleep infinity
 else
-	if [ "${ACCEPT_EULA}" == "false" ]; then
-		if grep -rq 'eula=true' ${SERVER_DIR}/eula.txt; then
-			sed -i '/eula=true/c\eula=false' ${SERVER_DIR}/eula.txt
-		fi
-		echo
-		echo "-------------------------------------------------------"
-    	echo "------EULA not accepted, you must accept the EULA------"
-    	echo "---to start the Server, putting server in sleep mode---"
-    	echo "-------------------------------------------------------"
-    	sleep infinity
-    fi
+	echo "---Unexpected ACCEPT_EULA value '${ACCEPT_EULA}', please set 'true' or 'false'---"
 fi
 echo "---Checking for old logs---"
 find ${SERVER_DIR} -name "masterLog.*" -exec rm -f {} \;
@@ -193,45 +159,41 @@ screen -wipe 2&>/dev/null
 
 echo "---Starting Server---"
 cd ${SERVER_DIR}
+export PATH="${JAVA_HOME_DIR}/bin:$PATH"
 if [ -n "${START_SERVER_SCRIPT}" ]; then
-	export PATH="${SERVER_DIR}/runtime/${RUNTIME_NAME}/bin:$PATH"
 	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m ${SERVER_DIR}/${START_SERVER_SCRIPT}.sh
 elif [ -z "${JVM_CUSTOM_COMMAND}" ]; then
-	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m ${SERVER_DIR}/runtime/${RUNTIME_NAME}/bin/java ${EXTRA_JVM_PARAMS} -Xmx${XMX_SIZE}M -Xms${XMS_SIZE}M -jar ${SERVER_DIR}/${JAR_NAME}.jar nogui ${GAME_PARAMS}
+	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m ${JAVA_HOME_DIR}/bin/java ${EXTRA_JVM_PARAMS} -Xmx${XMX_SIZE}M -Xms${XMS_SIZE}M -jar ${SERVER_DIR}/${JAR_NAME}.jar nogui ${GAME_PARAMS}
 else
-	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m ${SERVER_DIR}/runtime/${RUNTIME_NAME}/bin/java ${JVM_CUSTOM_COMMAND} ${GAME_PARAMS}
-fi
-sleep 2
-if [ ! -f $SERVER_DIR/eula.txt ]; then
-	echo "---EULA not found please stand by...---"
-	sleep 30
-fi
-if [ "${ACCEPT_EULA}" == "true" ]; then
-	if grep -rq 'eula=false' ${SERVER_DIR}/eula.txt; then
-    	sed -i '/eula=false/c\eula=true' ${SERVER_DIR}/eula.txt
-		echo "---EULA accepted, server restarting, please wait...---"
-        sleep 5
-        exit 0
-    fi
-elif [ "${ACCEPT_EULA}" == "false" ]; then
-	echo
-	echo "-------------------------------------------------------"
-    echo "------EULA not accepted, you must accept the EULA------"
-    echo "---to start the Server, putting server in sleep mode---"
-    echo "-------------------------------------------------------"
-    sleep infinity
-else
-	echo "---Something went wrong, please check EULA variable---"
+	screen -S Minecraft -L -Logfile ${SERVER_DIR}/masterLog.0 -d -m ${JAVA_HOME_DIR}/bin/java ${JVM_CUSTOM_COMMAND} ${GAME_PARAMS}
 fi
 echo "---Waiting for logs, please stand by...---"
 if [ "${ENABLE_WEBCONSOLE}" == "true" ]; then
     /opt/scripts/start-gotty.sh 2>/dev/null &
 fi
-sleep 30
-if [ -f ${SERVER_DIR}/logs/latest.log ]; then
-	screen -S watchdog -d -m /opt/scripts/start-watchdog.sh
-	tail -F ${SERVER_DIR}/logs/latest.log
-else
-	screen -S watchdog -d -m /opt/scripts/start-watchdog.sh
-	tail -f ${SERVER_DIR}/masterLog.0
-fi
+
+# Best-effort streaming of the server log to the container's stdout (docker logs).
+# NOTE: `tail -F` uses inotify and can abort with "No data available" on some
+# bind mounts (notably Docker Desktop on Windows) while the file is being
+# rewritten. Run it in a retry loop in the background so a hiccup can never take
+# down the entrypoint and trigger a restart loop.
+(
+	sleep 5
+	while true; do
+		if [ -f "${SERVER_DIR}/logs/latest.log" ]; then
+			tail -n 100 -F "${SERVER_DIR}/logs/latest.log" 2>/dev/null
+		else
+			tail -n 100 -F "${SERVER_DIR}/masterLog.0" 2>/dev/null
+		fi
+		sleep 2
+	done
+) &
+
+# Keep the container alive for as long as the server's screen session is running,
+# so a log-tail hiccup can't kill a healthy server. When the server stops, fall
+# through and exit 0 so Docker's restart policy can act.
+sleep 5
+while screen -list 2>/dev/null | grep -q '\.Minecraft'; do
+	sleep 5
+done
+echo "---Minecraft server has stopped---"

@@ -1,0 +1,5 @@
+# Shell scripts and the Dockerfile run inside a Linux container — they must use
+# LF line endings regardless of the host OS, or the shebang/parse breaks.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.properties text eol=lf

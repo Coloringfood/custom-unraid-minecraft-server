@@ -1,0 +1,11 @@
+# Local test server directory (mounted by docker-compose for testing).
+# Drop your pre-downloaded server files + start script in here; git ignores
+# everything except the placeholder so worlds/jars/runtime never get committed.
+/serverfiles/*
+!/serverfiles/.gitkeep
+!/serverfiles/README.md
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp

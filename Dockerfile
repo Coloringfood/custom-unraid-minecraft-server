@@ -41,8 +41,5 @@ ADD /scripts/ /opt/scripts/
 COPY /config/server.properties /tmp/server.properties
 RUN chmod -R 770 /opt/scripts/
 
-# Debugging: List contents of /opt/scripts/
-RUN ls -l /opt/scripts/ && echo "Contents of /opt/scripts/ directory:"
-
 #Server Start
 ENTRYPOINT ["/opt/scripts/start.sh"]
