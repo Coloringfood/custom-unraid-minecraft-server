@@ -53,7 +53,25 @@ a runtime you supply yourself: a folder of that name must already exist under
 
 ATTENTION: Don't forget to accept the EULA down below and don't forget to edit the 'server.properties' file the server is by default configured to be a LAN server and to be not snooped.
 
->**WEB CONSOLE:** You can connect to the Minecraft console by opening your browser and go to HOSTIP:9011 (eg: 192.168.1.1:9011) or click on WebUI on the Docker page within Unraid.
+## Console & admin input
+
+The server (and any override start script) runs inside a `screen` session that the
+**web console** attaches to with input enabled. So the console isn't read-only — you
+can send commands *and* answer interactive prompts a pack's start script might show.
+
+- **Web console:** open `http://HOSTIP:9011` (e.g. `192.168.1.1:9011`), or click WebUI
+  in Unraid. Type a server command (e.g. `op <player>`, `stop`) or the answer to a
+  prompt, then Enter.
+- **From the host (scriptable):** inject input into the session without the browser —
+  ```bash
+  docker exec -u minecraft <container> screen -S Minecraft -X stuff $'say hello\r'
+  ```
+  The trailing `\r` is the Enter key; this is the same mechanism the container uses to
+  send `stop` on shutdown.
+
+> Because prompts are answerable this way, an interactive override script waits for
+> input rather than failing — but it still blocks until someone answers. For fully
+> unattended startup, prefer the **generic launcher** (it never prompts).
 
 ## Env params
 | Name | Value | Example |

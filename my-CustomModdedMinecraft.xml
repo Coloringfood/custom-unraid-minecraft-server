@@ -9,20 +9,19 @@
   <Privileged>false</Privileged>
   <Support>https://forums.unraid.net/topic/79530-support-ich777-gameserver-dockers/</Support>
   <Project>https://www.minecraft.net/</Project>
-  <Overview>This is a Basic Minecraft Server, with the basic configuration it will download and install a Vanilla Minecraft.&#xD;
+  <Overview>Run ANY Minecraft server (Vanilla, Forge, NeoForge, Fabric, Paper, Spigot, FTB, modpacks) from a directory you already have. Mount your pre-downloaded server folder to /serverdata/serverfiles and the container installs the correct Java (Temurin) runtime, accepts the EULA, and launches it.&#xD;
 &#xD;
-You can also install a FTB (FeedTheBeast), Bukkit, Spigot,... server.&#xD;
+TWO LAUNCH MODES:&#xD;
 &#xD;
-Start the container for the first time let it do it's work and shut it down.&#xD;
-After that copy over your favorite server executable (don't forget to set the Serverfile name to the same as you copied over) and start the container again.&#xD;
+1) GENERIC LAUNCHER (default - leave 'Start Server Script' empty): auto-detects Forge/NeoForge (libraries/.../unix_args.txt), Fabric (fabric-server-launch.jar), or a vanilla/Paper jar and launches it headless. If a Forge/NeoForge server is not installed yet, it runs a bundled forge-*-installer.jar, or downloads and installs one when you set MC Version + Forge Version (or NeoForge Version). Memory/JVM flags come from XMX/XMS/Extra JVM Parameters - a pack's own user_jvm_args.txt is ignored so RAM lives in one place.&#xD;
 &#xD;
-JAVA RUNTIME: Enter your prefered Runtime 'basicjre'=jre8, 'jre11'=jre11, 'jre15'=jre15 Don't change unless you are knowing what you are doing! Please keep in mind if you change the runtime you have to delete the old runtime before&#xD;
+2) PER-PACK OVERRIDE (set 'Start Server Script' to the name, without .sh, of a script inside the server dir): runs that pack's own launcher verbatim, with the installed Java on PATH.&#xD;
 &#xD;
-UPDATE: If you set the variable GAME_V to 'latest' the container will check on every restart if there is a newer version available (if set to 'latest' the variable JAR_NAME has to be 'server').&#xD;
+WEB CONSOLE / ADMIN INPUT: open HOSTIP:9011 (eg 192.168.1.1:9011) or click WebUI. It attaches to the live server console with input enabled, so you can type server commands AND answer any interactive prompts a pack's start script shows (interactive scripts will otherwise wait for input).&#xD;
 &#xD;
-ATTENTION: Don't forget to accept the EULA down below and don't forget to edit the 'server.properties' file the server is by default configured to be a LAN server and to be not snooped.&#xD;
+JAVA RUNTIME: pick with 'Runtime Name' - basicjre=Java 8, jre11, jre16, jre17, jre21, or jre&lt;N&gt; for any major version Adoptium publishes. Switching versions automatically removes the old runtime.&#xD;
 &#xD;
-WEB CONSOLE: You can connect to the Minecraft console by opening your browser and go to HOSTIP:9011 (eg: 192.168.1.1:9011) or click on WebUI on the Docker page within Unraid.</Overview>
+ATTENTION: You must set 'Accept EULA' to true to start the server (https://aka.ms/MinecraftEULA). Remove client-only mods (eg rubidium) from a pack's mods folder - they crash dedicated servers.</Overview>
   <Category>GameServers:</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL/>
@@ -31,22 +30,27 @@ WEB CONSOLE: You can connect to the Minecraft console by opening your browser an
   <PostArgs/>
   <CPUset/>
   <DateInstalled>1745474554</DateInstalled>
-  <DonateText>If you like my work please </DonateText>
-  <DonateLink>https://www.paypal.me/chips777</DonateLink>
+  <DonateText/>
+  <DonateLink/>
   <Requires/>
-  <Config Name="ServerFiles" Target="/serverdata/serverfiles" Default="" Mode="rw" Description="" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/Minecraft/Project Architect 2/</Config>
-  <Config Name="Serverfile name" Target="JAR_NAME" Default="" Mode="" Description="Enter your executable jar file (Minecraft Serverfile) without the .jar extension." Type="Variable" Display="always" Required="true" Mask="false">forge-1.20.1-47.3.27-installer</Config>
-  <Config Name="Start Server Script" Target="START_SERVER_SCRIPT" Default="" Mode="" Description="Specify the custom start server script if needed. Leave blank to use the default. list without the .sh extension" Type="Variable" Display="always" Required="false" Mask="false">startserver</Config>
-  <Config Name="Game version" Target="GAME_V" Default="" Mode="" Description="If you set the variable GAME_V to 'latest' the container will check on every restart if there is a newer version available (if set to 'latest' the variable JAR_NAME has to be 'server' - available options are 'latest', 'custom' or simply leave empty)." Type="Variable" Display="always" Required="false" Mask="false"/>
-  <Config Name="Extra Game Parameters" Target="GAME_PARAMS" Default="" Mode="" Description="Enter your extra startup parameters otherwise leave blank!" Type="Variable" Display="always" Required="false" Mask="false"/>
-  <Config Name="Extra JVM Parameters" Target="EXTRA_JVM_PARAMS" Default="" Mode="" Description="Enter your extra startup parameters for the JVM otherwise leave blank! (Only change if you know what you are doing!!!)" Type="Variable" Display="always" Required="false" Mask="false"/>
-  <Config Name="XMS Size" Target="XMS_SIZE" Default="" Mode="" Description="Enter your XMS size in MB (XMS=The initial and minimum heap size. It is recommended to set the minimum heap size equivalent to the maximum heap size in order to minimize the garbage collection.)" Type="Variable" Display="always" Required="true" Mask="false">10024</Config>
-  <Config Name="XMX Size" Target="XMX_SIZE" Default="" Mode="" Description="Enter your XMX size in MB (XMX=The maximum heap size. The performance will decrease if the max heap value is set lower than the amount of live data. It will force frequent garbage collections in order to free up space.)" Type="Variable" Display="always" Required="true" Mask="false">10024</Config>
-  <Config Name="TCP - Game Port" Target="25565" Default="" Mode="tcp" Description="" Type="Port" Display="always" Required="true" Mask="false">25565</Config>
-  <Config Name="TCP2 - RCON" Target="25575" Default="" Mode="tcp" Description="Not required if not needed" Type="Port" Display="always" Required="false" Mask="false">25575</Config>
-  <Config Name="TCP - WebConsole" Target="8080" Default="" Mode="tcp" Description="WebConsole (by default, you can connect to the Minecraft console by opening your browser and go to HOSTIP:9011 - eg: 192.168.1.1:9011 - or click on WebUI on the Docker page within Unraid)." Type="Port" Display="always" Required="false" Mask="false">9011</Config>
-  <Config Name="Accept EULA" Target="ACCEPT_EULA" Default="false" Mode="" Description="Head over to: https://account.mojang.com/documents/minecraft_eula to read the EULA. (If you accept the EULA change the value to 'true' without quotes)." Type="Variable" Display="always" Required="true" Mask="false">true</Config>
-  <Config Name="Runtime Name" Target="RUNTIME_NAME" Default="" Mode="" Description="Enter your prefered Runtime: 'basicjre'=jre8, 'jre11'=jre11, 'jre15'=jre15, 'jre16'=jre16, 'jre17'=jre17, 'jre21=jre21' Don't change unless you are knowing what you are doing!" Type="Variable" Display="advanced" Required="true" Mask="false">jre21</Config>
-  <Config Name="UID" Target="UID" Default="" Mode="" Description="" Type="Variable" Display="advanced-hide" Required="true" Mask="false">99</Config>
-  <Config Name="GID" Target="GID" Default="" Mode="" Description="" Type="Variable" Display="advanced-hide" Required="true" Mask="false">100</Config>
+  <Config Name="Server Files" Target="/serverdata/serverfiles" Default="" Mode="rw" Description="Your pre-downloaded server/modpack directory. The runtime, installed libraries and world are written here." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/Minecraft/DeceasedCraft/</Config>
+  <Config Name="Start Server Script" Target="START_SERVER_SCRIPT" Default="" Mode="" Description="OVERRIDE: name (without .sh) of a start script inside the server dir to run. Leave EMPTY to use the built-in generic auto-detect launcher (recommended)." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Runtime Name" Target="RUNTIME_NAME" Default="jre17" Mode="" Description="Temurin JRE to install: basicjre=Java 8, jre11, jre16, jre17, jre21, or jre&lt;N&gt;. Switching versions auto-removes the old runtime. Forge/NeoForge 1.20.1 needs jre17; 1.21+ needs jre21." Type="Variable" Display="always" Required="true" Mask="false">jre17</Config>
+  <Config Name="Accept EULA" Target="ACCEPT_EULA" Default="false" Mode="" Description="Read the Minecraft EULA at https://aka.ms/MinecraftEULA. Set to 'true' to accept and allow the server to start." Type="Variable" Display="always" Required="true" Mask="false">true</Config>
+  <Config Name="XMX Size (MB)" Target="XMX_SIZE" Default="4096" Mode="" Description="Maximum Java heap size in MB. For large modpacks 4096-8192 is typical." Type="Variable" Display="always" Required="true" Mask="false">4096</Config>
+  <Config Name="XMS Size (MB)" Target="XMS_SIZE" Default="4096" Mode="" Description="Initial/minimum Java heap size in MB. Usually set equal to XMX." Type="Variable" Display="always" Required="true" Mask="false">4096</Config>
+  <Config Name="MC Version" Target="MC_VERSION" Default="" Mode="" Description="Minecraft version (eg 1.20.1). Only needed so the generic launcher can DOWNLOAD+install Forge when the dir has no installer/libraries. Pair with Forge Version." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Forge Version" Target="FORGE_VERSION" Default="" Mode="" Description="Forge version (eg 47.4.8) for the generic launcher's download-install. Requires MC Version." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="NeoForge Version" Target="NEOFORGE_VERSION" Default="" Mode="" Description="NeoForge version (eg 21.1.72) for the generic launcher's download-install (alternative to Forge)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Extra JVM Parameters" Target="EXTRA_JVM_PARAMS" Default="" Mode="" Description="Extra JVM flags (eg Aikar's GC flags). Applied by the generic launcher. Leave blank if unsure." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Extra Game Parameters" Target="GAME_PARAMS" Default="" Mode="" Description="Extra arguments passed to the server after 'nogui'. Leave blank if not needed." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Serverfile name" Target="JAR_NAME" Default="server" Mode="" Description="For the vanilla/Paper path: the server jar filename without .jar. Ignored for Forge/NeoForge/Fabric detection." Type="Variable" Display="advanced" Required="false" Mask="false">server</Config>
+  <Config Name="Game version (vanilla)" Target="GAME_V" Default="" Mode="" Description="Vanilla auto-download: 'latest' downloads the newest Vanilla server (JAR_NAME must be 'server'), 'custom' uses your own jar, or leave empty. Not used for modpacks." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Custom JVM Command" Target="JVM_CUSTOM_COMMAND" Default="" Mode="" Description="Advanced: fully override the JVM invocation. Bypasses the generic launcher. Leave blank unless you know you need it." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Enable Web Console" Target="ENABLE_WEBCONSOLE" Default="true" Mode="" Description="Serve the browser console (gotty) on port 8080, with input enabled for admin commands and answering prompts." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="TCP - Game Port" Target="25565" Default="25565" Mode="tcp" Description="Minecraft game port." Type="Port" Display="always" Required="true" Mask="false">25565</Config>
+  <Config Name="TCP - RCON" Target="25575" Default="25575" Mode="tcp" Description="RCON port (optional; only if enabled in server.properties)." Type="Port" Display="advanced" Required="false" Mask="false">25575</Config>
+  <Config Name="TCP - Web Console" Target="8080" Default="8080" Mode="tcp" Description="Browser console (gotty). Connect at HOSTIP:9011 by default." Type="Port" Display="always" Required="false" Mask="false">9011</Config>
+  <Config Name="UID" Target="UID" Default="99" Mode="" Description="User Identifier for file ownership." Type="Variable" Display="advanced-hide" Required="true" Mask="false">99</Config>
+  <Config Name="GID" Target="GID" Default="100" Mode="" Description="Group Identifier for file ownership." Type="Variable" Display="advanced-hide" Required="true" Mask="false">100</Config>
 </Container>
