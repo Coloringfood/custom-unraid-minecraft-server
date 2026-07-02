@@ -23,10 +23,10 @@ registry is private — run `docker login git.timaeustech.com` first if you get 
 auth error. The Unraid template (`my-CustomModdedMinecraft.xml`) already points at
 this image.
 
-> **Maintainers:** the build workflow (`.gitea/workflows/build-and-push.yml`) logs in
-> with the `GITEA_TOKEN` that Gitea Actions injects automatically — no manual secret
-> setup is required. It authenticates as the user who triggered the run, so that user
-> needs package-write access to `coloringfood`.
+> **Maintainers:** the build workflow (`.gitea/workflows/build-and-push.yml`) needs
+> two repo Actions secrets — `CI_GITEA_USERNAME` (your Gitea username) and
+> `CI_GITEA_TOKEN` (an access token with the `write:package` scope, created under
+> *Settings → Applications → Access Tokens*).
 
 ## Two launch models
 
