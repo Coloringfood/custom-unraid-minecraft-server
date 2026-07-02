@@ -4,6 +4,30 @@ Run *any* Minecraft server (Vanilla, Forge, NeoForge, Fabric, Paper, Spigot, FTB
 from a directory you already have. Mount your pre-downloaded server folder, and the
 container installs the right Java runtime, accepts the EULA, and launches it.
 
+## Prebuilt image
+
+Every push to `master` builds this image and pushes it to the Gitea container
+registry, so you can pull it instead of building locally:
+
+```
+git.timaeustech.com/coloringfood/custom-minecraft-server:latest
+```
+
+```bash
+docker pull git.timaeustech.com/coloringfood/custom-minecraft-server:latest
+```
+
+`:latest` tracks `master`; each build is also tagged with its commit SHA
+(`…/custom-minecraft-server:<sha>`) if you need to pin an exact version. The
+registry is private — run `docker login git.timaeustech.com` first if you get an
+auth error. The Unraid template (`my-CustomModdedMinecraft.xml`) already points at
+this image.
+
+> **Maintainers:** the build workflow (`.gitea/workflows/build-and-push.yml`) logs in
+> with the `GITEA_TOKEN` that Gitea Actions injects automatically — no manual secret
+> setup is required. It authenticates as the user who triggered the run, so that user
+> needs package-write access to `coloringfood`.
+
 ## Two launch models
 
 **1. Generic launcher (default).** Leave `START_SERVER_SCRIPT` empty and the

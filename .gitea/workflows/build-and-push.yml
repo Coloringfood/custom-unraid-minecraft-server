@@ -1,0 +1,58 @@
+name: Build and Push image
+
+on:
+  push:
+    branches:
+      - master
+  # Manual runs from the Gitea UI. On non-master refs, only the SHA and a
+  # branch-named tag are pushed — :latest is reserved for master.
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Gitea Registry
+        # Uses the token Gitea Actions injects automatically into every run
+        # (secrets.GITEA_TOKEN). It authenticates as the user who triggered the
+        # run, so the login username must be that same actor.
+        uses: docker/login-action@v3
+        with:
+          registry: git.timaeustech.com
+          username: ${{ gitea.actor }}
+          password: ${{ secrets.GITEA_TOKEN }}
+
+      - name: Compute image tags
+        id: tags
+        run: |
+          IMAGE=git.timaeustech.com/coloringfood/custom-minecraft-server
+          {
+            echo "tags<<EOF"
+            if [ "${{ gitea.ref }}" = "refs/heads/master" ]; then
+              echo "${IMAGE}:latest"
+            else
+              BRANCH_TAG=$(echo "${{ gitea.ref_name }}" | tr '/' '-')
+              echo "${IMAGE}:branch-${BRANCH_TAG}"
+            fi
+            echo "${IMAGE}:${{ gitea.sha }}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          provenance: false
+          sbom: false
+          cache-from: type=registry,ref=git.timaeustech.com/coloringfood/custom-minecraft-server:buildcache
+          cache-to: type=registry,ref=git.timaeustech.com/coloringfood/custom-minecraft-server:buildcache,mode=max
+          tags: ${{ steps.tags.outputs.tags }}
