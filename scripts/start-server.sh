@@ -174,6 +174,14 @@ if [ "${ENABLE_WEBCONSOLE}" == "true" ]; then
     /opt/scripts/start-gotty.sh 2>/dev/null &
 fi
 
+# Optional: daily scheduled restart with in-game warnings. Sends `stop` to the
+# screen session at AUTO_RESTART_TIME and lets Docker's restart policy bring the
+# container back — it never kills the container or the web console directly.
+if [ -n "${AUTO_RESTART_TIME:-}" ]; then
+    echo "---Scheduling daily auto-restart at ${AUTO_RESTART_TIME}---"
+    /opt/scripts/auto-restart.sh &
+fi
+
 # Best-effort streaming of the server log to the container's stdout (docker logs).
 # NOTE: `tail -F` uses inotify and can abort with "No data available" on some
 # bind mounts (notably Docker Desktop on Windows) while the file is being
