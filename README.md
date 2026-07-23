@@ -97,6 +97,29 @@ can send commands *and* answer interactive prompts a pack's start script might s
 > input rather than failing — but it still blocks until someone answers. For fully
 > unattended startup, prefer the **generic launcher** (it never prompts).
 
+## Scheduled daily restart
+
+Set **`AUTO_RESTART_TIME`** to `HH:MM` (24-hour) and the container restarts the
+server once a day at that time — handy for clearing the memory creep that makes
+big modpacks lag after a long uptime. Leave it empty (the default) to disable.
+
+- **`AUTO_RESTART_WARN`** — comma-separated minutes before the restart to warn
+  players with an in-game `say` broadcast (default `10,5,1`), plus a final
+  "restarting now" notice.
+- **`TZ`** — the container runs in **UTC** by default, so set your timezone
+  (e.g. `America/Denver`) or `04:00` means 4 AM UTC.
+
+It's **mod-agnostic** — no plugin/mod needed. At the scheduled time it sends
+`stop` into the server's `screen` session (the same channel used for a normal
+shutdown), the server saves and exits, and Docker's `restart: unless-stopped`
+policy brings a **fresh** container back up. Nothing you rely on is torn down
+permanently: the game port, RCON, volumes and the web-console URL all stay the
+same — the gotty web console just reconnects on its own after the ~30–60s
+restart (it attaches to the `screen` session, not the Java process, so it is
+never "lost", only briefly disconnected).
+
+> The scheduling logic has unit tests: `bash scripts/tests/auto-restart.test.sh`.
+
 ## Env params
 | Name | Value | Example |
 | --- | --- | --- |
@@ -115,6 +138,9 @@ can send commands *and* answer interactive prompts a pack's start script might s
 | EXTRA_JVM_PARAMS | Extra JVM startup Parameters if needed (leave empty if not needed) | empty |
 | JVM_CUSTOM_COMMAND | Overrides all startup parameters for JVM like it is required for Forge v1.18+ | empty |
 | ACCEPT_EULA | Head over to: https://account.mojang.com/documents/minecraft_eula to read the EULA. (If you accept the EULA change the value to 'true' without quotes). | true |
+| TZ | Timezone so AUTO_RESTART_TIME is local, not UTC. Leave empty for UTC. | America/Denver |
+| AUTO_RESTART_TIME | Daily restart time as HH:MM (24h, container timezone). Empty = disabled. | 04:00 |
+| AUTO_RESTART_WARN | Minutes-before-restart to warn players in-game (comma-separated). | 10,5,1 |
 | UID | User Identifier | 99 |
 | GID | Group Identifier | 100 |
 

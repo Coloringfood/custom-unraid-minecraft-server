@@ -30,6 +30,13 @@ services:
 
       ACCEPT_EULA: "true"
       ENABLE_WEBCONSOLE: "true"
+
+      # --- Optional daily restart (clears memory/lag). Empty time = disabled.
+      # TZ so the time below is local, not UTC. Warns players via in-game chat,
+      # then lets Docker's restart policy bring a fresh container back up. ---
+      TZ: "${TZ:-America/Denver}"
+      AUTO_RESTART_TIME: "${AUTO_RESTART_TIME:-}"
+      AUTO_RESTART_WARN: "${AUTO_RESTART_WARN:-10,5,1}"
     volumes:
       # Point at one pack's folder. Switch packs with:  PACK=ProjectArchitect2 docker compose up
       - ./serverfiles/${PACK:-DeceasedCraft}:/serverdata/serverfiles
