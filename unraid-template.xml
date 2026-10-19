@@ -7,8 +7,8 @@
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://forums.unraid.net/topic/79530-support-ich777-gameserver-dockers/</Support>
-  <Project>https://www.minecraft.net/</Project>
+  <Support/>
+  <Project>https://git.timaeustech.com/coloringfood/CustomModdedMinecraftServer</Project>
   <Overview>Run ANY Minecraft server (Vanilla, Forge, NeoForge, Fabric, Paper, Spigot, FTB, modpacks) from a directory you already have. Mount your pre-downloaded server folder to /serverdata/serverfiles and the container installs the correct Java (Temurin) runtime, accepts the EULA, and launches it.&#xD;
 &#xD;
 TWO LAUNCH MODES:&#xD;
@@ -29,7 +29,6 @@ ATTENTION: You must set 'Accept EULA' to true to start the server (https://aka.m
   <ExtraParams>--restart=unless-stopped</ExtraParams>
   <PostArgs/>
   <CPUset/>
-  <DateInstalled>1745474554</DateInstalled>
   <DonateText/>
   <DonateLink/>
   <Requires/>
@@ -48,7 +47,7 @@ ATTENTION: You must set 'Accept EULA' to true to start the server (https://aka.m
   <Config Name="Game version (vanilla)" Target="GAME_V" Default="" Mode="" Description="Vanilla auto-download: 'latest' downloads the newest Vanilla server (JAR_NAME must be 'server'), 'custom' uses your own jar, or leave empty. Not used for modpacks." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Custom JVM Command" Target="JVM_CUSTOM_COMMAND" Default="" Mode="" Description="Advanced: fully override the JVM invocation. Bypasses the generic launcher. Leave blank unless you know you need it." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Enable Web Console" Target="ENABLE_WEBCONSOLE" Default="true" Mode="" Description="Serve the browser console (gotty) on port 8080, with input enabled for admin commands and answering prompts." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
-  <Config Name="Timezone" Target="TZ" Default="" Mode="" Description="Timezone (eg America/Denver) so Auto Restart Time is interpreted as local time. The container is UTC without this." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Timezone" Target="TZ" Default="America/Denver" Mode="" Description="Timezone (eg America/Denver) so Auto Restart Time is interpreted as local time. The container is UTC without this." Type="Variable" Display="advanced" Required="false" Mask="false">America/Denver</Config>
   <Config Name="Auto Restart Time" Target="AUTO_RESTART_TIME" Default="" Mode="" Description="Optional daily restart at this HH:MM (24h, container timezone - set Timezone too). Warns players in-game, stops the server, and Docker restarts a fresh container. Leave EMPTY to disable." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Auto Restart Warnings" Target="AUTO_RESTART_WARN" Default="10,5,1" Mode="" Description="Comma-separated minutes-before-restart to broadcast an in-game warning. Only used when Auto Restart Time is set." Type="Variable" Display="advanced" Required="false" Mask="false">10,5,1</Config>
   <Config Name="TCP - Game Port" Target="25565" Default="25565" Mode="tcp" Description="Minecraft game port." Type="Port" Display="always" Required="true" Mask="false">25565</Config>

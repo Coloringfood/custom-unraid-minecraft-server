@@ -20,7 +20,7 @@ docker pull git.timaeustech.com/coloringfood/custom-minecraft-server:latest
 `:latest` tracks `master`; each build is also tagged with its commit SHA
 (`…/custom-minecraft-server:<sha>`) if you need to pin an exact version. The
 registry is private — run `docker login git.timaeustech.com` first if you get an
-auth error. The Unraid template (`my-CustomModdedMinecraft.xml`) already points at
+auth error. The Unraid template (`unraid-template.xml`) already points at
 this image.
 
 > **Maintainers:** the build workflow (`.gitea/workflows/build-and-push.yml`) needs
