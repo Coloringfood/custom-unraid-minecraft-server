@@ -23,6 +23,26 @@ registry is private — run `docker login git.timaeustech.com` first if you get 
 auth error. The Unraid template (`unraid-template.xml`) already points at
 this image.
 
+## Deploy to Unraid
+
+To make the template available in Unraid, run this from `C:\gitRepos` (`-WhatIf`
+previews):
+
+```powershell
+scripts\install-unraid-template.ps1 customMinecraftServer -TemplateName CustomModdedMinecraft
+```
+
+It copies the template to
+`/boot/config/plugins/dockerMan/templates-user/my-CustomModdedMinecraft.xml` on the
+server and refuses if that file already exists (without `-TemplateName` the name
+comes from `<Name>`, `CustomMinecraftServer`). Then Docker → Add Container →
+Template → CustomModdedMinecraft, name the container (one per modpack, e.g.
+`Deceased-Craft`), point *Server Files* at the pack, and Apply. Unraid saves each
+container's settings as its own `my-<container name>.xml`, so the template stays
+clean for the next pack. To update the template itself, delete the old
+`my-CustomModdedMinecraft.xml` on the server first (check it holds nothing you
+want to keep) and run the script again.
+
 > **Maintainers:** the build workflow (`.gitea/workflows/build-and-push.yml`) needs
 > two repo Actions secrets — `CI_GITEA_USERNAME` (your Gitea username) and
 > `CI_GITEA_TOKEN` (an access token with the `write:package` scope, created under
